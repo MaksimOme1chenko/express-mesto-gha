@@ -22,11 +22,14 @@ const createNewCard = (req, res) => {
 
 const deliteCard = (req, res) => {
   Cards.findByIdAndRemove(req.params.cardId)
-    .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404).send({ message: 'Пользователь с таким id не найден.' });
+    .then((card) => {
+      if (card) {
+        res.send({ data: card });
+      } else {
+        res.status(404).send({ message: 'Передан несуществующий id карточки.' });
       }
+    })
+    .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Передан некорректный id.' });
       } else {
@@ -41,14 +44,16 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .then((card) => res.send({ data: card }))
+    .then((card) => {
+      if (card) {
+        res.send({ data: card });
+      } else {
+        res.status(404).send({ message: 'Передан несуществующий id карточки.' });
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка.' });
-      }
-      if (err.name === 'DocumentNotFoundError') {
-        console.log(err.name);
-        res.status(404).send({ message: 'Передан несуществующий id карточки.' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -61,14 +66,16 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .then((card) => res.send({ data: card }))
+    .then((card) => {
+      if (card) {
+        res.send({ data: card });
+      } else {
+        res.status(404).send({ message: 'Передан несуществующий id карточки.' });
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка.' });
-      }
-      if (err.name === 'DocumentNotFoundError') {
-        console.log(err.name);
-        res.status(404).send({ message: 'Передан несуществующий id карточки.' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
