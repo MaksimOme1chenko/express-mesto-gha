@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/user');
 
 const getAllUsers = (req, res) => {
@@ -16,7 +17,7 @@ const getUserById = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err instanceof mongoose.Error.CastError) {
         res.status(400).send({ message: 'Передан некорректный id пользователя' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
@@ -30,8 +31,29 @@ const createNewUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof mongoose.Error.ValidationError) {
         res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
+};
+
+const changeUserData = (req, res, updateData) => {
+  User.findByIdAndUpdate(req.user._id, updateData, {
+    new: true,
+    runValidators: true,
+  })
+    .then((user) => {
+      if (user) {
+        res.send({ data: user });
+      } else {
+        res.status(404).send({ message: 'Пользователь с таким id не найден.' });
+      }
+    })
+    .catch((err) => {
+      if (err instanceof mongoose.Error.CastError) {
+        res.status(400).send({ message: 'Пользователь с таким id не найден.' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -40,52 +62,12 @@ const createNewUser = (req, res) => {
 
 const updateUser = (req, res) => {
   const updateData = req.body;
-  User.findByIdAndUpdate(req.user._id, updateData, {
-    new: true,
-    runValidators: true,
-  })
-    .then((user) => {
-      if (user) {
-        res.send({ data: user });
-      } else {
-        res.status(404).send({ message: 'Пользователь с таким id не найден.' });
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
-      }
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Пользователь с таким id не найден.' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+  changeUserData(req, res, updateData);
 };
 
 const updateAvatar = (req, res) => {
   const updateData = req.body;
-  User.findByIdAndUpdate(req.user._id, updateData, {
-    new: true,
-    runValidators: true,
-  })
-    .then((user) => {
-      if (user) {
-        res.send({ data: user });
-      } else {
-        res.status(404).send({ message: 'Пользователь с таким id не найден.' });
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара.' });
-      }
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Пользователь с таким id не найден.' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+  changeUserData(req, res, updateData);
 };
 
 module.exports = {
