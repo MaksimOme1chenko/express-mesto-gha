@@ -24,8 +24,11 @@ const deliteCard = (req, res) => {
   Cards.findByIdAndRemove(req.params.cardId)
     .then((card) => res.send({ data: card }))
     .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: 'Пользователь с таким id не найден.' });
+      }
       if (err.name === 'CastError') {
-        res.status(404).send({ message: 'Карточка с указанным id не найдена.' });
+        res.status(400).send({ message: 'Передан некорректный id.' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -40,10 +43,10 @@ const likeCard = (req, res) => {
   )
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка.' });
       }
-      if (err.name === 'CastError') {
+      if (err.name === 'DocumentNotFoundError') {
         console.log(err.name);
         res.status(404).send({ message: 'Передан несуществующий id карточки.' });
       } else {
@@ -60,10 +63,10 @@ const dislikeCard = (req, res) => {
   )
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка.' });
       }
-      if (err.name === 'CastError') {
+      if (err.name === 'DocumentNotFoundError') {
         console.log(err.name);
         res.status(404).send({ message: 'Передан несуществующий id карточки.' });
       } else {

@@ -10,8 +10,11 @@ const getUserById = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'DocumentNotFoundError') {
         res.status(404).send({ message: 'Пользователь с таким id не найден.' });
+      }
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Передан некорректный id пользователя' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -40,11 +43,14 @@ const updateUser = (req, res) => {
   })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: 'Пользователь с таким id не найден.' });
+      }
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
       }
       if (err.name === 'CastError') {
-        res.status(404).send({ message: 'Пользователь с таким id не найден.' });
+        res.status(400).send({ message: 'Пользователь с таким id не найден.' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -59,11 +65,14 @@ const updateAvatar = (req, res) => {
   })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(404).send({ message: 'Пользователь с таким id не найден.' });
+      }
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара.' });
       }
       if (err.name === 'CastError') {
-        res.status(404).send({ message: 'Пользователь с таким id не найден.' });
+        res.status(400).send({ message: 'Пользователь с таким id не найден.' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
