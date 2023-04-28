@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 const Cards = require('../models/card');
+const { notFoundError, badRequestError, internalServerError } = require('../utils/errors');
 
 const getAllCards = (req, res) => {
   Cards.find({})
     .populate(['owner', 'likes'])
     .then((card) => res.send({ data: card }))
-    .catch((error) => res.status(500).send(error));
+    .catch(() => res.status(internalServerError).send({ message: 'Произошла ошибка' }));
 };
 
 const createNewCard = (req, res) => {
@@ -16,9 +17,9 @@ const createNewCard = (req, res) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: 'Переданы некорректные данные при создании карточки.' });
+        res.status(badRequestError).send({ message: 'Переданы некорректные данные при создании карточки.' });
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.status(internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -29,14 +30,14 @@ const deliteCard = (req, res) => {
       if (card) {
         res.send({ data: card });
       } else {
-        res.status(404).send({ message: 'Передан несуществующий id карточки.' });
+        res.status(notFoundError).send({ message: 'Передан несуществующий id карточки.' });
       }
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Передан некорректный id.' });
+        res.status(badRequestError).send({ message: 'Передан некорректный id.' });
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.status(internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -48,14 +49,14 @@ const changeLikeStatus = (req, res, updateData) => {
       if (card) {
         res.send({ data: card });
       } else {
-        res.status(404).send({ message: 'Передан несуществующий id карточки.' });
+        res.status(notFoundError).send({ message: 'Передан несуществующий id карточки.' });
       }
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка.' });
+        res.status(badRequestError).send({ message: 'Переданы некорректные данные для постановки лайка.' });
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.status(internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
