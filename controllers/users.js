@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
+
 const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const ConflictRequestError = require('../errors/ConflictRequestError');
@@ -51,23 +52,27 @@ const createNewUser = (req, res, next) => {
     password,
   } = req.body;
 
-  bcrypt
-    .hash(password, 10)
-    .then((hash) => {
-      User.create({
-        name,
-        about,
-        avatar,
-        email,
-        password: hash,
-      });
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+    .then((user) => {
+      // const dataUser = user.toObject();
+      res.send(user);
     })
-    .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Переданы некорректные данные.'));
-      } else if (err.code === 11000) {
+      if (err.code === 11000) {
         next(new ConflictRequestError('Данный email уже зарегистрирован.'));
+      }
+      if (err instanceof mongoose.Error.ValidationError) {
+        const errorMessage = Object.values(err.errors)
+          .map((error) => error.message)
+          .join(', ');
+        throw new BadRequestError(`Некорректные данные: ${errorMessage}`);
       } else {
         next(err);
       }
@@ -98,7 +103,7 @@ const changeUserData = (req, res, updateData, next) => {
   })
     .then((user) => {
       if (user) {
-        res.send({ data: user });
+        res.send(user);
       } else {
         throw new NotFoundError('Пользователь с таким id не найден');
       }

@@ -3,20 +3,22 @@ const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const validator = require('validator');
 
+const UnauthorizedError = require('../errors/UnauthorizedError');
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
     minlength: 2,
     maxlength: 30,
-    default: 'Жак-ив-кусто',
+    default: 'Жак-Ив Кусто',
   },
   about: {
     type: String,
     required: true,
     minlength: 2,
     maxlength: 30,
-    default: 'Ислледователь океанов',
+    default: 'Исследователь',
   },
   avatar: {
     type: String,
@@ -45,13 +47,13 @@ userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Неверные логин или пароль'));
+        return Promise.reject(new UnauthorizedError('Неверные логин или пароль'));
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new Error('Неверные логин или пароль'));
+            return Promise.reject(new UnauthorizedError('Неверные логин или пароль'));
           }
           return user;
         });
