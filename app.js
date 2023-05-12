@@ -8,7 +8,7 @@ const helmet = require('helmet');
 const { errors } = require('celebrate');
 const router = require('./routes/index');
 
-const genErrorHandler = require('./middlewares/errorDefault');
+const errorHandler = require('./middlewares/errorHandler');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -28,14 +28,6 @@ app.use(router);
 
 app.use(errors());
 
-app.use(genErrorHandler);
-// app.use((err, req, res, next) => {
-//   const { statusCode = 500, message } = err;
-
-//   res.status(statusCode).send({
-//     message: statusCode === 500 ? 'на сервере произошла ошибка' : message,
-//   });
-//   next();
-// });
+app.use(errorHandler);
 
 app.listen(PORT);

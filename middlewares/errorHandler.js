@@ -1,7 +1,7 @@
 const { internalServerError } = require('../utils/errors');
 
 // eslint-disable-next-line consistent-return
-function genErrorHandler(err, req, res, next) {
+function errorHandler(err, req, res, next) {
   if (err.statusCode) {
     res.status(err.statusCode).send({ message: err.message });
   } else {
@@ -10,4 +10,4 @@ function genErrorHandler(err, req, res, next) {
   }
 }
 
-module.exports = genErrorHandler;
+module.exports = errorHandler;

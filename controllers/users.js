@@ -24,7 +24,7 @@ const getUserById = (req, res, next) => {
       if (user) {
         res.send({ data: user });
       } else {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError('Пользователь с указанным id не найден');
       }
     })
     .catch((err) => {
@@ -61,18 +61,19 @@ const createNewUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => {
-      // const dataUser = user.toObject();
-      res.send(user);
+      res.send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      });
     })
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictRequestError('Данный email уже зарегистрирован.'));
       }
       if (err instanceof mongoose.Error.ValidationError) {
-        const errorMessage = Object.values(err.errors)
-          .map((error) => error.message)
-          .join(', ');
-        throw new BadRequestError(`Некорректные данные: ${errorMessage}`);
+        next(new BadRequestError('Переданны некоректные данные для создания пользователя'));
       } else {
         next(err);
       }
@@ -110,7 +111,7 @@ const changeUserData = (req, res, updateData, next) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        throw new BadRequestError('Переданы некорректные данные.');
+        throw new BadRequestError('Переданы некорректные данные для изменения пользователя');
       } else {
         next(err);
       }
