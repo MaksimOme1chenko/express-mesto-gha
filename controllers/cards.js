@@ -52,29 +52,28 @@ const changeLikeStatus = (req, res, updateData, next) => {
   Cards.findByIdAndUpdate(req.params.cardId, updateData, { new: true })
     .populate(['owner', 'likes'])
     .then((card) => {
-      if (card) {
-        res.send({ data: card });
-      } else {
-        throw new NotFoundError('Передан несуществующий id карточки.');
+      if (card) res.send(card);
+      else {
+        throw new NotFoundError('Карточка с указанным id не найдена');
       }
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        throw new BadRequestError('Переданы некорректные данные.');
+        throw new BadRequestError('Переданы некорректные данные для постановки/снятия лайка.');
       } else {
         next(err);
       }
     });
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   const changeData = { $addToSet: { likes: req.user._id } };
-  changeLikeStatus(req, res, changeData);
+  changeLikeStatus(req, res, changeData, next);
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   const updateData = { $pull: { likes: req.user._id } };
-  changeLikeStatus(req, res, updateData);
+  changeLikeStatus(req, res, updateData, next);
 };
 
 module.exports = {
