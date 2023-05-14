@@ -1,16 +1,15 @@
+/* eslint-disable no-lone-blocks */
 const mongoose = require('mongoose');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 
+const { NODE_ENV, JWT_SECRET } = process.env;
 const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const ConflictRequestError = require('../errors/ConflictRequestError');
 const NotFoundError = require('../errors/NotFoundError');
-// const ForbiddenError = require('../errors/ForbiddenError');
-
-const { NODE_ENV, JWT_SECRET } = process.env;
 
 const getAllUsers = (req, res, next) => {
   User.find({})
@@ -29,7 +28,7 @@ const getUserById = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        throw new BadRequestError('Передан некорректный id пользователя.');
+        next(new BadRequestError('Передан некорректный id пользователя.'));
       } else {
         next(err);
       }
@@ -71,12 +70,9 @@ const createNewUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictRequestError('Данный email уже зарегистрирован.'));
-      }
-      if (err instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Переданны некоректные данные для создания пользователя'));
-      } else {
-        next(err);
-      }
+      } else if (err instanceof mongoose.Error.ValidationError) {
+        next(new BadRequestError('Переданы некорректные данные для создания пользователя.'));
+      } else { { next(err); } }
     });
 };
 
@@ -103,15 +99,14 @@ const changeUserData = (req, res, updateData, next) => {
     runValidators: true,
   })
     .then((user) => {
-      if (user) {
-        res.send(user);
-      } else {
+      if (user) res.send(user);
+      else {
         throw new NotFoundError('Пользователь с таким id не найден');
       }
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        throw new BadRequestError('Переданы некорректные данные для изменения пользователя');
+        next(new BadRequestError('Переданы некорректные данные для изменения пользователя.'));
       } else {
         next(err);
       }
@@ -119,13 +114,13 @@ const changeUserData = (req, res, updateData, next) => {
 };
 
 const updateUser = (req, res) => {
-  const updateData = req.body;
-  changeUserData(req, res, updateData);
+  const { name, about } = req.body;
+  changeUserData(req, res, { name, about });
 };
 
 const updateAvatar = (req, res) => {
-  const updateData = req.body;
-  changeUserData(req, res, updateData);
+  const { avatar } = req.body;
+  changeUserData(req, res, { avatar });
 };
 
 module.exports = {

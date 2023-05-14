@@ -4,8 +4,9 @@ const { login, createNewUser } = require('../controllers/users');
 const { link } = require('../utils/regex');
 const users = require('./users');
 const cards = require('./cards');
-const { notFoundError } = require('../utils/errors');
 const { auth } = require('../middlewares/auth');
+
+const NotFoundError = require('../errors/NotFoundError');
 
 router.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -26,8 +27,8 @@ router.post('/signup', celebrate({
 
 router.use('/users', auth, users);
 router.use('/cards', auth, cards);
-router.all('*', (req, res) => {
-  res.status(notFoundError).send({ message: 'Страница не найдена' });
+router.all('*', auth, (req, res, next) => {
+  next(new NotFoundError('Страница не найдена'));
 });
 
 module.exports = router;

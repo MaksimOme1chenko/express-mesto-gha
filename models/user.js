@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const validator = require('validator');
+const { link } = require('../utils/regex');
 
 const UnauthorizedError = require('../errors/UnauthorizedError');
 
@@ -24,6 +25,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: {
+      validator: (v) => link.test(v),
+      message: 'Невалидный Email',
+    },
   },
   email: {
     type: String,

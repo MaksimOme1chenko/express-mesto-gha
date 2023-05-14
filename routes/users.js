@@ -21,9 +21,9 @@ router.get('/:userId', celebrate({
 }), getUserById);
 
 router.patch('/me', celebrate({
-  params: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
   }),
 }), updateUser);
 router.patch('/me/avatar', celebrate({

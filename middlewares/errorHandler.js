@@ -1,13 +1,5 @@
-const { internalServerError } = require('../utils/errors');
-
-// eslint-disable-next-line consistent-return
-function errorHandler(err, req, res, next) {
-  if (err.statusCode) {
-    res.status(err.statusCode).send({ message: err.message });
-  } else {
-    res.status(internalServerError).send({ message: `Произошла ошибка: ${err.message}` });
-    return next();
-  }
-}
-
-module.exports = errorHandler;
+module.exports = (err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
+  next();
+};
