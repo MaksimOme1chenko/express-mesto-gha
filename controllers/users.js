@@ -72,7 +72,9 @@ const createNewUser = (req, res, next) => {
         next(new ConflictRequestError('Данный email уже зарегистрирован.'));
       } else if (err instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError('Переданы некорректные данные для создания пользователя.'));
-      } else { { next(err); } }
+      } else {
+        next(err);
+      }
     });
 };
 
@@ -88,7 +90,7 @@ const login = (req, res, next) => {
         httpOnly: true,
         sameSite: true,
       });
-      res.send({ token });
+      res.send(user);
     })
     .catch(next);
 };
